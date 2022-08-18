@@ -1,7 +1,7 @@
 <?php
 namespace Osynapsy\Psr\Http;
 
-use Osynapsy\Http\Psr7\Message\Factory\UriFromGlobal;
+use Osynapsy\Psr\Http\Factory\UriFromGlobal;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
