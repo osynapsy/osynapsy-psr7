@@ -1,0 +1,25 @@
+{
+    "name": "osynapsy.net/osynapsy-psr7",
+    "version": "0.1",
+    "homepage": "http://www.osynapsy.net/psr7",
+    "type": "library",
+    "description": "Osynapsy Psr is implementation of Psr7 interface",
+    "keywords": ["Psr7"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pietro Celeste",
+            "email": "p.celeste@osynapsy.net",
+            "homepage": "https://github.com/osynapsy/osynapsy-psr/wiki"
+        }
+    ],
+    "require": {
+        "php" : ">=7.2.0",
+        "psr/http-message" : "@stable"
+    },
+    "autoload" : {
+        "psr-4": {
+            "Osynapsy\\Psr\\Http": "src/Osynapsy/Psr/Http"
+        }
+    }
+}
