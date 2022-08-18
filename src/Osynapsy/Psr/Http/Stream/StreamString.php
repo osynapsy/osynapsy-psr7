@@ -10,7 +10,7 @@ class StreamString extends Base
 {
     public function __construct(string $stream = '', $operations = 'r+')
     {
-        $this->stream = fopen('php://memory', $operations);
+        parent::__construct(fopen('php://memory', $operations));
         $this->write($stream);
         $this->rewind();
     }

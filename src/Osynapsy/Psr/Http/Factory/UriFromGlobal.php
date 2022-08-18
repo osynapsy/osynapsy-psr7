@@ -1,7 +1,7 @@
 <?php
 namespace Osynapsy\Psr\Http\Factory;
 
-use Osynapsy\Http\Psr7\Message\Uri;
+use Osynapsy\Psr\Http\Uri;
 
 /**
  * Description of UriFromGlobalFactory
