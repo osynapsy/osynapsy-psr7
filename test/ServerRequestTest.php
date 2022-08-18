@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Osynapsy\Http\Psr7\Message\ServerRequest;
+use Osynapsy\Psr\Http\ServerRequest;
 
 /**
  * Description of ServerRequestTest

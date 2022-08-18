@@ -2,8 +2,8 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Osynapsy\Http\Psr7\Message\Uri;
-use Osynapsy\Http\Psr7\Message\Factory\UriFromGlobal;
+use Osynapsy\Psr\Http\Uri;
+use Osynapsy\Psr\Http\Factory\UriFromGlobal;
 
 /**
  * Description of ResponseTest
