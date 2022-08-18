@@ -1,7 +1,7 @@
 {
-    "name": "osynapsy.net/osynapsy-psr7",
+    "name": "osynapsy.net/osynapsy-psr",
     "version": "0.1",
-    "homepage": "http://www.osynapsy.net/psr7",
+    "homepage": "http://www.osynapsy.net/psr",
     "type": "library",
     "description": "Osynapsy Psr is implementation of Psr7 interface",
     "keywords": ["Psr7"],
