@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Osynapsy\Psr\Http\Request;
+use Osynapsy\Psr7\Request;
 
 /**
  * Description of ResponseTest
