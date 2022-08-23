@@ -1,5 +1,5 @@
 <?php
-namespace Osynapsy\Psr\Http;
+namespace Osynapsy\Psr7\Http;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;

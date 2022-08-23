@@ -1,5 +1,5 @@
 <?php
-namespace Osynapsy\Psr\Http\Stream;
+namespace Osynapsy\Psr7\Http\Stream;
 
 /**
  * Description of String
