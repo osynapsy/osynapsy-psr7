@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * This file is part of the Osynapsy package.
+ *
+ * (c) Pietro Celeste <p.celeste@osynapsy.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Osynapsy\Psr7\Http\Factory;
 
 use Osynapsy\Psr7\Http\Uri;
@@ -6,7 +16,7 @@ use Osynapsy\Psr7\Http\Uri;
 /**
  * Description of UriFromGlobalFactory
  *
- * @author pietro
+ * @author Pietro Celeste <p.celeste@osynapsy.net>
  */
 class UriFromGlobal
 {

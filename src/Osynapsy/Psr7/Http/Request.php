@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * This file is part of the Osynapsy package.
+ *
+ * (c) Pietro Celeste <p.celeste@osynapsy.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Osynapsy\Psr7\Http;
 
 use Psr\Http\Message\RequestInterface;
@@ -7,7 +17,7 @@ use Psr\Http\Message\UriInterface;
 /**
  * Description of Request
  *
- * @author pietro
+ * @author Pietro Celeste <p.celeste@osynapsy.net>
  */
 class Request extends Message implements RequestInterface
 {
