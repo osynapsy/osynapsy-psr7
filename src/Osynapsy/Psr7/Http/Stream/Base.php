@@ -29,7 +29,7 @@ class Base implements StreamInterface
         $this->metadata = stream_get_meta_data($this->stream);
     }
 
-    public function close()
+    public function close() : void
     {
         fclose($this->stream);
     }
@@ -39,7 +39,7 @@ class Base implements StreamInterface
         $this->stream = null;
     }
 
-    public function eof()
+    public function eof() : bool
     {
         return feof($this->stream);
     }
@@ -49,7 +49,7 @@ class Base implements StreamInterface
         fseek($this->stream, 0, SEEK_END);
     }
 
-    public function getContents()
+    public function getContents() : string
     {
         return stream_get_contents($this->stream);
     }
@@ -59,17 +59,17 @@ class Base implements StreamInterface
         return is_null($key) ? $this->metadata : $this->metadata[$key];
     }
 
-    public function getSize()
+    public function getSize() : ?int
     {
         return fstat($this->stream)['size'];
     }
 
-    public function isReadable()
+    public function isReadable() : bool
     {
         return in_array($this->getMetadata('mode'), ['r', 'r+', 'w+', 'w+b']);
     }
 
-    public function isWritable()
+    public function isWritable() : bool
     {
         return in_array($this->getMetadata('mode'), ['w', 'r+', 'w+', 'w+b']);
     }
@@ -104,12 +104,12 @@ class Base implements StreamInterface
         $this->write($newcontent);
     }
 
-    public function read($requestLength)
+    public function read(int $requestLength) : string
     {
         return fread($this->stream, $requestLength);
     }
 
-    public function rewind()
+    public function rewind() : void
     {
         $this->seek(0);
     }
@@ -123,19 +123,19 @@ class Base implements StreamInterface
         return $result;
     }
 
-    public function seek($position, $whence = \SEEK_SET)
+    public function seek(int $position, int $whence = \SEEK_SET) : void
     {
         fseek($this->stream, $position, $whence);
     }
 
-    public function tell()
+    public function tell() : int
     {
         return ftell($this->stream);
     }
 
-    public function write($text)
+    public function write(string $text) : int
     {
-        fwrite($this->stream, $text);
+        return fwrite($this->stream, $text);
     }
 
     public function __toString()

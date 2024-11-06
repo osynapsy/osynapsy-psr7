@@ -128,12 +128,12 @@ class UploadedFile implements UploadedFileInterface
         }
     }
 
-    public function getClientMediaType()
+    public function getClientMediaType() :? string
     {
         return $this->clientMediaType;
     }
 
-    public function getClientFilename()
+    public function getClientFilename() :? string
     {
         return $this->clientFilename;
     }
@@ -153,7 +153,7 @@ class UploadedFile implements UploadedFileInterface
         return $this->stream;
     }
 
-    public function moveTo($targetPath)
+    public function moveTo(string $targetPath) : void
     {
         $this->validateActive();
         if ($this->isStringNotEmpty($targetPath) === false) {
@@ -167,9 +167,9 @@ class UploadedFile implements UploadedFileInterface
         }
     }
 
-    protected function moveFile($targetPath)
+    protected function moveFile(string $targetPath) : void
     {
-        return PHP_SAPI === 'cli' ? rename($this->file, $targetPath) : move_uploaded_file($this->file, $targetPath);
+        PHP_SAPI === 'cli' ? rename($this->file, $targetPath) : move_uploaded_file($this->file, $targetPath);
     }
 
     protected function saveStream($targetPath)

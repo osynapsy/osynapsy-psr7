@@ -130,9 +130,9 @@ class Uri implements UriInterface
         return $this->path;
     }
 
-    public function getPort()
+    public function getPort() : int
     {
-        return  $this->port && !$this->hasStandardPort() ? $this->port : null;
+        return  $this->port && !$this->hasStandardPort() ? $this->port : 0;
     }
 
     protected function hasStandardPort(): bool
@@ -158,7 +158,7 @@ class Uri implements UriInterface
         return $this->query;
     }
 
-    public function withPort($port)
+    public function withPort(?int $port) : UriInterface
     {
         $this->validatePort($port);
         return $this->cloneAndSetProperty('port', $port);
@@ -171,12 +171,12 @@ class Uri implements UriInterface
         }
     }
 
-    public function withHost($host)
+    public function withHost(string $host) : UriInterface
     {
         return $this->cloneAndSetProperty('host', $host);
     }
 
-    public function withUserInfo($user, $password = null)
+    public function withUserInfo(string $user, ?string $password = null) : UriInterface
     {
         $result = clone $this;
         $result->user = $user;
@@ -184,24 +184,24 @@ class Uri implements UriInterface
         return $result;
     }
 
-    public function withScheme($scheme)
+    public function withScheme(string $scheme) : UriInterface
     {
         $result = clone $this;
         $result->setScheme($scheme);
         return $result;
     }
 
-    public function withFragment($fragment)
+    public function withFragment(string $fragment) : UriInterface
     {
         return $this->cloneAndSetProperty('fragment', $fragment);
     }
 
-    public function withQuery($query)
+    public function withQuery(string $query) : UriInterface
     {
         return $this->cloneAndSetProperty('query', $query);
     }
 
-    public function withPath($path)
+    public function withPath(string $path) : UriInterface
     {
         return $this->cloneAndSetProperty('path', $path);
     }

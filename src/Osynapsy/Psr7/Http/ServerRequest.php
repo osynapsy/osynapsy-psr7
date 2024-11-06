@@ -44,7 +44,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $this->attributes[$name] ?? $default;
     }
 
-    public function withAttribute($name, $value)
+    public function withAttribute($name, $value) : ServerRequestInterface
     {
         if ($this->getAttribute($name) === $value) {
             return $this;
@@ -54,7 +54,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $result;
     }
 
-    public function withoutAttribute($name)
+    public function withoutAttribute($name) : ServerRequestInterface
     {
         if (array_key_exists($name, $this->attributes) === false) {
             return $this;
@@ -69,7 +69,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $this->parsedBody;
     }
 
-    public function withParsedBody($data)
+    public function withParsedBody($data) : ServerRequestInterface
     {
         if ($this->parsedBody === $data) {
             return $this;
@@ -84,7 +84,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $this->uploadedFiles;
     }
 
-    public function withUploadedFiles(array $uploadedFiles)
+    public function withUploadedFiles(array $uploadedFiles) : ServerRequestInterface
     {
         if ($this->uploadedFiles === $uploadedFiles) {
             return $this;
@@ -99,7 +99,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $this->queryParameters;
     }
 
-    public function withQueryParams(array $query)
+    public function withQueryParams(array $query) : ServerRequestInterface
     {
 
         if ($this->queryParameters === $query) {
@@ -115,7 +115,7 @@ class ServerRequest extends Request implements ServerRequestInterface
         return $this->cookieParametes;
     }
 
-    public function withCookieParams(array $cookies)
+    public function withCookieParams(array $cookies) : ServerRequestInterface
     {
         if ($this->cookieParametes === $cookies) {
             return $this;

@@ -87,7 +87,7 @@ class Request extends Message implements RequestInterface
         return $this->requestTarget;
     }
 
-    public function withRequestTarget($requestTarget)
+    public function withRequestTarget(string $requestTarget) : RequestInterface
     {
         if ($this->requestTarget === $requestTarget) {
             return $this;
@@ -102,7 +102,7 @@ class Request extends Message implements RequestInterface
         return $this->method;
     }
 
-    public function withMethod($method)
+    public function withMethod(string $method) : RequestInterface
     {
         $this->validateMethod($method);
         if ($this->method === $method) {
@@ -118,7 +118,7 @@ class Request extends Message implements RequestInterface
         return $this->uri;
     }
 
-    public function withUri(UriInterface $uri, $preserveHost = false)
+    public function withUri(UriInterface $uri, bool $preserveHost = false) : RequestInterface
     {
         if ($uri === $this->uri) {
             return $this;

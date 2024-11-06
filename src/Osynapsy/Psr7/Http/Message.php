@@ -27,7 +27,7 @@ class Message implements MessageInterface
     protected $headerNames = [];
     protected $bodyStream;
 
-    public function getProtocolVersion()
+    public function getProtocolVersion() : string
     {
         return $this->protocol;
     }
@@ -50,14 +50,14 @@ class Message implements MessageInterface
         }
     }
 
-    public function withProtocolVersion($protocolVersion)
+    public function withProtocolVersion($protocolVersion) :  MessageInterface
     {
         $result = clone $this;
         $result->setProtocolVersion($protocolVersion);
         return $result;
     }
 
-    public function withHeader($key, $value)
+    public function withHeader($key, $value) : MessageInterface
     {
         $caseInsesitiveKey = $this->caseInsesitiveKey($key);
         $result = clone $this;
@@ -66,7 +66,7 @@ class Message implements MessageInterface
         return $result;
     }
 
-    public function withAddedHeader($key, $value)
+    public function withAddedHeader($key, $value) : MessageInterface
     {
         $caseInsesitiveKey = $this->caseInsesitiveKey($key);
         $values = is_array($value) ? $value : [$value];
@@ -78,7 +78,7 @@ class Message implements MessageInterface
         return $result;
     }
 
-    public function withoutHeader($name)
+    public function withoutHeader($name) : MessageInterface
     {
         if (!$this->hasHeader($name)) {
             return $this;
@@ -104,9 +104,9 @@ class Message implements MessageInterface
      * @param type $key
      * @return array
      */
-    public function getHeader($key) : ?array
+    public function getHeader($key) : array
     {
-        return $this->hasHeader($key) ? $this->headers[$this->caseInsesitiveKey($key)] : null;
+        return $this->hasHeader($key) ? $this->headers[$this->caseInsesitiveKey($key)] : [];
     }
 
     /**
@@ -126,12 +126,12 @@ class Message implements MessageInterface
      * @param type $key
      * @return string
      */
-    public function getHeaderLine($key) : ?string
+    public function getHeaderLine($key) : string
     {
-        return $this->hasHeader($key) ? implode(', ', $this->headers[$key]) : null;
+        return $this->hasHeader($key) ? implode(', ', $this->headers[$key]) : '';
     }
 
-    public function getBody()
+    public function getBody() : StreamInterface
     {
         return $this->bodyStream;
     }
@@ -151,7 +151,7 @@ class Message implements MessageInterface
         $this->bodyStream = $stream;
     }
 
-    public function withBody(StreamInterface $stream)
+    public function withBody(StreamInterface $stream) : MessageInterface
     {
         if ($stream === $this->bodyStream) {
             return $this;
