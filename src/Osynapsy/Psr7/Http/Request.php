@@ -44,21 +44,17 @@ class Request extends Message implements RequestInterface
         $this->setMethod($method);
         $this->setUri($uri);
         $this->setHeaders($headers);
-        
-        if ($body !== null) {
-            if ($body instanceof StreamInterface) {
-                $this->setBody($body);
-            } elseif (is_string($body)) {
-                $this->setBody(new Stream\StringStream($body));
-            } elseif (is_resource($body)) {
-                $this->setBody(new Stream\Base($body));
-            } else {
-                throw new InvalidArgumentException('Body must be a StreamInterface, string, or resource');
-            }
-        } else {
+        if (is_null($body)) {
             $this->setBody(new Stream\StringStream(''));
-        }
-        
+        } elseif ($body instanceof StreamInterface) {
+            $this->setBody($body);
+        } elseif (is_string($body)) {
+            $this->setBody(new Stream\StringStream($body));
+        } elseif (is_resource($body)) {
+            $this->setBody(new Stream\Base($body));
+        } else {
+            throw new InvalidArgumentException('Body must be a StreamInterface, string, or resource');
+        }                
         $this->setProtocolVersion($protocolVersion);
         $this->updateHostFromUri();
     }
