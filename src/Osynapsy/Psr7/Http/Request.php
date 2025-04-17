@@ -13,6 +13,8 @@ namespace Osynapsy\Psr7\Http;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\StreamInterface;
+use InvalidArgumentException;
 
 /**
  * Description of Request
@@ -42,8 +44,23 @@ class Request extends Message implements RequestInterface
         $this->setMethod($method);
         $this->setUri($uri);
         $this->setHeaders($headers);
-        $this->setBody(is_scalar($body) ? new Stream\Base(fopen('php://memory', 'r+')) : $body);
+        
+        if ($body !== null) {
+            if ($body instanceof StreamInterface) {
+                $this->setBody($body);
+            } elseif (is_string($body)) {
+                $this->setBody(new Stream\StringStream($body));
+            } elseif (is_resource($body)) {
+                $this->setBody(new Stream\Base($body));
+            } else {
+                throw new InvalidArgumentException('Body must be a StreamInterface, string, or resource');
+            }
+        } else {
+            $this->setBody(new Stream\StringStream(''));
+        }
+        
         $this->setProtocolVersion($protocolVersion);
+        $this->updateHostFromUri();
     }
 
     protected function setMethod($rawMethod)
@@ -56,7 +73,7 @@ class Request extends Message implements RequestInterface
     protected function validateMethod($method)
     {
         if (!in_array($method, self::VALID_METHODS)) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Method %s is invalid. Valid methods are : %s',
                 $method,
                 implode(', ', self::VALID_METHODS)
@@ -66,7 +83,7 @@ class Request extends Message implements RequestInterface
 
     protected function setUri($uri)
     {
-        $this->uri = ($uri instanceof UriInterface) ? $uri : new Uri('', $uri);
+        $this->uri = ($uri instanceof UriInterface) ? $uri : new Uri($uri);
     }
 
     protected function setRequestTarget(string $requestTarget)
@@ -87,7 +104,7 @@ class Request extends Message implements RequestInterface
         return $this->requestTarget;
     }
 
-    public function withRequestTarget(string $requestTarget) : RequestInterface
+    public function withRequestTarget($requestTarget)
     {
         if ($this->requestTarget === $requestTarget) {
             return $this;
@@ -102,8 +119,9 @@ class Request extends Message implements RequestInterface
         return $this->method;
     }
 
-    public function withMethod(string $method) : RequestInterface
+    public function withMethod($method)
     {
+        $method = strtoupper($method);
         $this->validateMethod($method);
         if ($this->method === $method) {
             return $this;
@@ -118,14 +136,14 @@ class Request extends Message implements RequestInterface
         return $this->uri;
     }
 
-    public function withUri(UriInterface $uri, bool $preserveHost = false) : RequestInterface
+    public function withUri(UriInterface $uri, $preserveHost = false)
     {
         if ($uri === $this->uri) {
             return $this;
         }
         $result = clone $this;
         $result->setUri($uri);
-        if (!$preserveHost || !isset($this->headerNames['host'])) {
+        if (!$preserveHost || !$result->hasHeader('Host')) {
             $result->updateHostFromUri();
         }
         return $result;
@@ -140,11 +158,11 @@ class Request extends Message implements RequestInterface
         if (($port = $this->uri->getPort()) !== null) {
             $host .= ':' . $port;
         }
-        if (isset($this->headerNames['host'])) {
-            $header = $this->headerNames['host'];
+        if ($this->hasHeader('Host')) {
+            $header = $this->headerNames[$this->caseInsensitiveKey('host')];
         } else {
             $header = 'Host';
-            $this->headerNames['host'] = 'Host';
+            $this->headerNames[$this->caseInsensitiveKey('host')] = 'Host';
         }
         // Ensure Host is the first header.
         // See: http://tools.ietf.org/html/rfc7230#section-5.4

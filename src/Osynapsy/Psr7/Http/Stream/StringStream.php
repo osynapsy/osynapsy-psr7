@@ -11,123 +11,224 @@
 
 namespace Osynapsy\Psr7\Http\Stream;
 
+use Psr\Http\Message\StreamInterface;
+use RuntimeException;
+use InvalidArgumentException;
+
 /**
- * Description of String
+ * String-based stream implementation
  *
- * @author Pietro Celeste <pietro.celeste@gmail.com>
+ * @author Pietro Celeste <p.celeste@osynapsy.net>
  */
-class StringStream
+class StringStream implements StreamInterface
 {
-    protected $stream = '';
-    protected $streamLength = 0;
-    protected $position = 0;
-    //Default operation w is necessary for init stream;
-    protected $operations = 'w';
+    /**
+     * @var string
+     */
+    private $contents;
 
-    public function __construct($stream = '', $operations = 'a')
+    /**
+     * @var int
+     */
+    private $position = 0;
+
+    /**
+     * @var bool
+     */
+    private $writable = true;
+
+    /**
+     * @param string $contents
+     */
+    public function __construct(string $contents = '')
     {
-        $this->write($stream);
-        $this->operations = $operations;
-        $this->rewind();
+        $this->contents = $contents;
     }
 
-    public function eof()
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString()
     {
-        return ($this->position === $this->streamLength);
-    }
-
-    public function end()
-    {
-        $this->position = $this->streamLength;
-    }
-
-    public function isReadable()
-    {
-        return (strpos($this->operations, 'r') !== false || strpos($this->operations, 'a') !== false);
-    }
-
-    public function isSeekable()
-    {
-        return true;
-    }
-
-    public function isWriteable()
-    {
-        return (strpos($this->operations, 'w') !== false || strpos($this->operations, 'a') !== false);
-    }
-
-    public function getContent()
-    {
-        return $this->read($this->streamLength - $this->position);
-    }
-
-    public function postpend($text, $keysearch)
-    {
-        $keyposition = $this->search($keysearch);
-        if ($keyposition === false) {
-            return false;
+        try {
+            return $this->getContents();
+        } catch (\Exception $e) {
+            return '';
         }
-        $keyposition += strlen($keysearch);
-        $this->seek($keyposition);
-        $this->write($text);
     }
 
-    public function prepend($text, $keysearch)
+    /**
+     * {@inheritdoc}
+     */
+    public function close(): void
     {
-        $keyposition = $this->search($keysearch);
-        if ($keyposition === false) {
-            return false;
-        }
-        $this->seek($keyposition);
-        $this->write($text);
+        // Nothing to do
     }
 
-    public function read($requestLength)
+    /**
+     * {@inheritdoc}
+     */
+    public function detach()
     {
-        if ($this->isReadable() === false) {
-            return;
-        }
-        $position = $this->position;
-        $readLength = min($this->streamLength - $position, $requestLength);
-        $this->position += $readLength;
-        return substr($this->stream, $position, $readLength);
+        return null;
     }
 
-    public function rewind()
+    /**
+     * {@inheritdoc}
+     */
+    public function getSize(): ?int
     {
-        $this->position = 0;
+        return strlen($this->contents);
     }
 
-    public function seek($position)
-    {
-        if ($this->isSeekable() === false) {
-            return;
-        }
-        $this->position = min($position, $this->streamLength);
-    }
-
-    public function search($key, $position = null)
-    {
-        return strpos($this->stream, $key, $position ?? $this->position);
-    }
-
-    public function tell()
+    /**
+     * {@inheritdoc}
+     */
+    public function tell(): int
     {
         return $this->position;
     }
 
-    public function write($text)
+    /**
+     * {@inheritdoc}
+     */
+    public function eof(): bool
     {
-        if ($this->isWriteable() === false) {
-            return;
-        }
-        $this->stream = substr_replace($this->stream, $text, $this->tell(), 0);
-        $this->position += strlen($text);
-        $this->streamLength = strlen($this->stream);
+        return $this->position >= strlen($this->contents);
     }
 
-    public function __toString()
+    /**
+     * {@inheritdoc}
+     */
+    public function isSeekable(): bool
     {
-        return $this->stream;
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function seek($offset, $whence = SEEK_SET): void
+    {
+        if ($whence !== SEEK_SET && $whence !== SEEK_CUR && $whence !== SEEK_END) {
+            throw new InvalidArgumentException('Invalid whence value');
+        }
+
+        $size = strlen($this->contents);
+
+        if ($whence === SEEK_SET) {
+            $this->position = $offset;
+        } elseif ($whence === SEEK_CUR) {
+            $this->position += $offset;
+        } elseif ($whence === SEEK_END) {
+            $this->position = $size + $offset;
+        }
+
+        if ($this->position < 0) {
+            $this->position = 0;
+        }
+
+        if ($this->position > $size) {
+            $this->position = $size;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rewind(): void
+    {
+        $this->position = 0;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isWritable(): bool
+    {
+        return $this->writable;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function write($string): int
+    {
+        if (!$this->writable) {
+            throw new RuntimeException('Stream is not writeable');
+        }
+
+        $size = strlen($string);
+        $this->contents = substr_replace($this->contents, $string, $this->position, $size);
+        $this->position += $size;
+
+        return $size;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isReadable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function read($length): string
+    {
+        if ($length < 0) {
+            throw new RuntimeException('Length cannot be negative');
+        }
+
+        if ($this->position >= strlen($this->contents)) {
+            return '';
+        }
+
+        $result = substr($this->contents, $this->position, $length);
+        $this->position += strlen($result);
+
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContents(): string
+    {
+        if ($this->position >= strlen($this->contents)) {
+            return '';
+        }
+
+        $contents = substr($this->contents, $this->position);
+        $this->position = strlen($this->contents);
+
+        return $contents;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMetadata($key = null)
+    {
+        $metadata = [
+            'timed_out' => false,
+            'blocked' => false,
+            'eof' => $this->eof(),
+            'unread_bytes' => strlen($this->contents) - $this->position,
+            'stream_type' => 'string',
+            'wrapper_type' => 'string',
+            'wrapper_data' => null,
+            'mode' => 'rb+',
+            'seekable' => true,
+            'uri' => 'string://memory',
+        ];
+
+        if ($key === null) {
+            return $metadata;
+        }
+
+        return $metadata[$key] ?? null;
     }
 }

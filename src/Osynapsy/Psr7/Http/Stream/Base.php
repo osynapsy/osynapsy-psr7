@@ -12,135 +12,295 @@
 namespace Osynapsy\Psr7\Http\Stream;
 
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
+use InvalidArgumentException;
 
 /**
- * Description of Base
+ * Base stream implementation
  *
- * @author pietro
+ * @author Pietro Celeste <p.celeste@osynapsy.net>
  */
 class Base implements StreamInterface
 {
-    protected $stream;
-    protected $metadata;
+    /**
+     * @var resource
+     */
+    private $stream;
 
+    /**
+     * @var array|null
+     */
+    private $metadata;
+
+    /**
+     * @var bool
+     */
+    private $readable;
+
+    /**
+     * @var bool
+     */
+    private $writable;
+
+    /**
+     * @var bool
+     */
+    private $seekable;
+
+    /**
+     * @var int|null
+     */
+    private $size;
+
+    /**
+     * @param resource $stream
+     * @throws InvalidArgumentException
+     */
     public function __construct($stream)
     {
+        if (!is_resource($stream)) {
+            throw new InvalidArgumentException('Stream must be a resource');
+        }
+
         $this->stream = $stream;
-        $this->metadata = stream_get_meta_data($this->stream);
+        $this->metadata = stream_get_meta_data($stream);
+        $this->readable = false !== strpos($this->metadata['mode'], 'r') || false !== strpos($this->metadata['mode'], '+');
+        $this->writable = false !== strpos($this->metadata['mode'], 'w') || 
+                         false !== strpos($this->metadata['mode'], 'a') || 
+                         false !== strpos($this->metadata['mode'], '+');
+        $this->seekable = $this->metadata['seekable'];
     }
 
-    public function close() : void
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString()
     {
-        fclose($this->stream);
+        if (!$this->isReadable() || !$this->isSeekable()) {
+            return '';
+        }
+
+        try {
+            $position = $this->tell();
+            $this->rewind();
+            $contents = $this->getContents();
+            $this->seek($position);
+            return $contents;
+        } catch (\Exception $e) {
+            return '';
+        }
     }
 
-    public function detach()
+    /**
+     * {@inheritdoc}
+     */
+    public function close(): void
     {
+        if (is_resource($this->stream)) {
+            fclose($this->stream);
+        }
         $this->stream = null;
     }
 
-    public function eof() : bool
+    /**
+     * {@inheritdoc}
+     */
+    public function detach()
     {
-        return feof($this->stream);
+        $resource = $this->stream;
+        $this->stream = null;
+        $this->metadata = null;
+        $this->readable = false;
+        $this->writable = false;
+        $this->seekable = false;
+        $this->size = null;
+
+        return $resource;
     }
 
-    public function end()
+    /**
+     * {@inheritdoc}
+     */
+    public function getSize(): ?int
     {
-        fseek($this->stream, 0, SEEK_END);
+        if ($this->size !== null) {
+            return $this->size;
+        }
+
+        if (!is_resource($this->stream)) {
+            return null;
+        }
+
+        $stats = fstat($this->stream);
+        if (isset($stats['size'])) {
+            $this->size = $stats['size'];
+            return $this->size;
+        }
+
+        return null;
     }
 
-    public function getContents() : string
+    /**
+     * {@inheritdoc}
+     */
+    public function tell(): int
     {
-        return stream_get_contents($this->stream);
+        if (!is_resource($this->stream)) {
+            throw new RuntimeException('Stream is not a resource');
+        }
+
+        $position = ftell($this->stream);
+        if ($position === false) {
+            throw new RuntimeException('Unable to determine stream position');
+        }
+
+        return $position;
     }
 
-    public function getMetadata($key = null)
+    /**
+     * {@inheritdoc}
+     */
+    public function eof(): bool
     {
-        return is_null($key) ? $this->metadata : $this->metadata[$key];
+        return !is_resource($this->stream) || feof($this->stream);
     }
 
-    public function getSize() : ?int
-    {
-        return fstat($this->stream)['size'];
-    }
-
-    public function isReadable() : bool
-    {
-        return in_array($this->getMetadata('mode'), ['r', 'r+', 'w+', 'w+b']);
-    }
-
-    public function isWritable() : bool
-    {
-        return in_array($this->getMetadata('mode'), ['w', 'r+', 'w+', 'w+b']);
-    }
-
+    /**
+     * {@inheritdoc}
+     */
     public function isSeekable(): bool
     {
-        return $this->getMetadata('seekable') ? true : false;
+        return $this->seekable;
     }
 
-    public function postpend($text, $keysearch)
+    /**
+     * {@inheritdoc}
+     */
+    public function seek($offset, $whence = SEEK_SET): void
     {
-        $keyposition = $this->search($keysearch);
-        if ($keyposition === false) {
-            return false;
+        if (!is_resource($this->stream)) {
+            throw new RuntimeException('Stream is not a resource');
         }
-        $keyposition += strlen($keysearch);
-        $this->rewind();
-        $newcontent = substr_replace($this->getContents(), $text, $keyposition, 0);
-        $this->rewind();
-        $this->write($newcontent);
-    }
 
-    public function prepend($text, $keysearch)
-    {
-        $keyposition = $this->search($keysearch);
-        if ($keyposition === false) {
-            return false;
+        if (!$this->seekable) {
+            throw new RuntimeException('Stream is not seekable');
         }
-        $this->rewind();
-        $newcontent = substr_replace($this->getContents(), $text, $keyposition, 0);
-        $this->rewind();
-        $this->write($newcontent);
+
+        if (fseek($this->stream, $offset, $whence) === -1) {
+            throw new RuntimeException('Unable to seek to stream position ' . $offset . ' with whence ' . var_export($whence, true));
+        }
     }
 
-    public function read(int $requestLength) : string
-    {
-        return fread($this->stream, $requestLength);
-    }
-
-    public function rewind() : void
+    /**
+     * {@inheritdoc}
+     */
+    public function rewind(): void
     {
         $this->seek(0);
     }
 
-    public function search($keysearch)
+    /**
+     * {@inheritdoc}
+     */
+    public function isWritable(): bool
     {
-        $currentPosition = $this->tell();
-        $this->rewind();
-        $result = strpos($this->getContents(), $keysearch);
-        $this->seek($currentPosition);
+        return $this->writable;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function write($string): int
+    {
+        if (!is_resource($this->stream)) {
+            throw new RuntimeException('Stream is not a resource');
+        }
+
+        if (!$this->writable) {
+            throw new RuntimeException('Stream is not writable');
+        }
+
+        $this->size = null;
+        $result = fwrite($this->stream, $string);
+
+        if ($result === false) {
+            throw new RuntimeException('Unable to write to stream');
+        }
+
         return $result;
     }
 
-    public function seek(int $position, int $whence = \SEEK_SET) : void
+    /**
+     * {@inheritdoc}
+     */
+    public function isReadable(): bool
     {
-        fseek($this->stream, $position, $whence);
+        return $this->readable;
     }
 
-    public function tell() : int
+    /**
+     * {@inheritdoc}
+     */
+    public function read($length): string
     {
-        return ftell($this->stream);
+        if (!is_resource($this->stream)) {
+            throw new RuntimeException('Stream is not a resource');
+        }
+
+        if (!$this->readable) {
+            throw new RuntimeException('Stream is not readable');
+        }
+
+        if ($length < 0) {
+            throw new RuntimeException('Length cannot be negative');
+        }
+
+        if ($length === 0) {
+            return '';
+        }
+
+        $result = fread($this->stream, $length);
+        if ($result === false) {
+            throw new RuntimeException('Unable to read from stream');
+        }
+
+        return $result;
     }
 
-    public function write(string $text) : int
+    /**
+     * {@inheritdoc}
+     */
+    public function getContents(): string
     {
-        return fwrite($this->stream, $text);
+        if (!is_resource($this->stream)) {
+            throw new RuntimeException('Stream is not a resource');
+        }
+
+        if (!$this->readable) {
+            throw new RuntimeException('Stream is not readable');
+        }
+
+        $contents = stream_get_contents($this->stream);
+        if ($contents === false) {
+            throw new RuntimeException('Unable to read stream contents');
+        }
+
+        return $contents;
     }
 
-    public function __toString()
+    /**
+     * {@inheritdoc}
+     */
+    public function getMetadata($key = null)
     {
-        $this->rewind();
-        return $this->getContents();
+        if (!is_resource($this->stream)) {
+            return $key ? null : [];
+        }
+
+        if ($key === null) {
+            return $this->metadata;
+        }
+
+        return isset($this->metadata[$key]) ? $this->metadata[$key] : null;
     }
 }

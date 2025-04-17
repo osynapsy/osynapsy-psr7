@@ -13,6 +13,7 @@ namespace Osynapsy\Psr7\Http;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
+use InvalidArgumentException;
 
 /**
  * Description of Message
@@ -27,7 +28,7 @@ class Message implements MessageInterface
     protected $headerNames = [];
     protected $bodyStream;
 
-    public function getProtocolVersion() : string
+    public function getProtocolVersion()
     {
         return $this->protocol;
     }
@@ -42,7 +43,7 @@ class Message implements MessageInterface
     {
         if (!in_array($protocolVersion, self::VALID_PROTOCOL_VERSION)) {
             throw new InvalidArgumentException(
-                sprtinf(
+                sprintf(
                     'Invalid HTTP version. Must be one of: %s',
                     implode(', ', self::VALID_PROTOCOL_VERSION)
                 )
@@ -50,69 +51,80 @@ class Message implements MessageInterface
         }
     }
 
-    public function withProtocolVersion($protocolVersion) :  MessageInterface
+    public function withProtocolVersion($protocolVersion)
     {
         $result = clone $this;
         $result->setProtocolVersion($protocolVersion);
         return $result;
     }
 
-    public function withHeader($key, $value) : MessageInterface
+    public function withHeader($key, $value)
     {
-        $caseInsesitiveKey = $this->caseInsesitiveKey($key);
+        $caseInsensitiveKey = $this->caseInsensitiveKey($key);
         $result = clone $this;
-        $result->headerNames[$caseInsesitiveKey] = $key;
+        $result->headerNames[$caseInsensitiveKey] = $key;
         $result->headers[$key] = is_array($value) ? $value : [$value];
         return $result;
     }
 
-    public function withAddedHeader($key, $value) : MessageInterface
+    public function withAddedHeader($key, $value)
     {
-        $caseInsesitiveKey = $this->caseInsesitiveKey($key);
+        $caseInsensitiveKey = $this->caseInsensitiveKey($key);
         $values = is_array($value) ? $value : [$value];
         $result = clone $this;
         if (!$this->hasHeader($key)) {
-            $result->headerNames[$caseInsesitiveKey] = $key;
+            $result->headerNames[$caseInsensitiveKey] = $key;
+            $result->headers[$key] = $values;
+        } else {
+            $headerKey = $this->headerNames[$caseInsensitiveKey];
+            $result->headers[$headerKey] = array_merge($this->headers[$headerKey] ?? [], $values);
         }
-        $result->headers[$key] = array_merge($this->headers[$key] ?? [], $values);
         return $result;
     }
 
-    public function withoutHeader($name) : MessageInterface
+    public function withoutHeader($name)
     {
         if (!$this->hasHeader($name)) {
             return $this;
         }
-        unset($this->headers[$name]);
-        return clone $this;
+        $result = clone $this;
+        $caseInsensitiveKey = $this->caseInsensitiveKey($name);
+        $headerKey = $this->headerNames[$caseInsensitiveKey];
+        unset($result->headers[$headerKey]);
+        unset($result->headerNames[$caseInsensitiveKey]);
+        return $result;
     }
 
     /**
      * Check if key exists in header repository
      *
-     * @param type $key key to search
+     * @param string $key key to search
      * @return bool
      */
     public function hasHeader($key) : bool
     {
-        return array_key_exists($this->caseInsesitiveKey($key), $this->headerNames);
+        return array_key_exists($this->caseInsensitiveKey($key), $this->headerNames);
     }
 
     /**
      * Return the header values by key
      *
-     * @param type $key
+     * @param string $key
      * @return array
      */
     public function getHeader($key) : array
     {
-        return $this->hasHeader($key) ? $this->headers[$this->caseInsesitiveKey($key)] : [];
+        if (!$this->hasHeader($key)) {
+            return [];
+        }
+        $caseInsensitiveKey = $this->caseInsensitiveKey($key);
+        $headerKey = $this->headerNames[$caseInsensitiveKey];
+        return $this->headers[$headerKey];
     }
 
     /**
      * Return associative array of headers
      *
-     * @param type $key
      * @return array
      */
     public function getHeaders() : array
@@ -123,26 +135,34 @@ class Message implements MessageInterface
     /**
      * Return the header line by key
      *
-     * @param type $key
+     * @param string $key
      * @return string
      */
     public function getHeaderLine($key) : string
     {
-        return $this->hasHeader($key) ? implode(', ', $this->headers[$key]) : '';
+        if (!$this->hasHeader($key)) {
+            return '';
+        }
+        $caseInsensitiveKey = $this->caseInsensitiveKey($key);
+        $headerKey = $this->headerNames[$caseInsensitiveKey];
+        return implode(', ', $this->headers[$headerKey]);
     }
 
-    public function getBody() : StreamInterface
+    public function getBody()
     {
+        if ($this->bodyStream === null) {
+            $this->bodyStream = new Stream\StringStream('');
+        }
         return $this->bodyStream;
     }
 
     protected function setHeaders(array $headers)
     {
         foreach($headers as $name => $value) {
-            $caseInsesitiveKey = $this->caseInsesitiveKey($name);
-            $this->headerNames[$caseInsesitiveKey] = $name;
+            $caseInsensitiveKey = $this->caseInsensitiveKey($name);
+            $this->headerNames[$caseInsensitiveKey] = $name;
             $values = is_array($value) ? $value : [$value];
-            $this->headers[$name] = array_merge($this->headers[$name] ?? [], $values);
+            $this->headers[$name] = $values;
         }
     }
 
@@ -151,7 +171,7 @@ class Message implements MessageInterface
         $this->bodyStream = $stream;
     }
 
-    public function withBody(StreamInterface $stream) : MessageInterface
+    public function withBody(StreamInterface $stream)
     {
         if ($stream === $this->bodyStream) {
             return $this;
@@ -161,7 +181,7 @@ class Message implements MessageInterface
         return $result;
     }
 
-    protected function caseInsesitiveKey($key)
+    protected function caseInsensitiveKey($key)
     {
         return strtolower($key);
     }
