@@ -12,14 +12,14 @@
 namespace Osynapsy\Psr7\Http;
 
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\MessageInterface;
+use InvalidArgumentException;
 
 /**
  * Description of Response
  *
  * @author Pietro Celeste <p.celeste@osynapsy.net>
  */
-class Response extends Message implements ResponseInterface, MessageInterface
+class Response extends Message implements ResponseInterface
 {
     const STATUS_CODE_WITH_PHRASES = [
         100 => 'Continue',
@@ -87,7 +87,7 @@ class Response extends Message implements ResponseInterface, MessageInterface
         511 => 'Network Authentication'
     ];
     private $statusCode;
-    private $reasonPhase;
+    private $reasonPhrase;
 
     public function __construct(int $statusCode = 200, array $headers = [], $body = null, $protocolVersion = '1.1')
     {
@@ -96,8 +96,16 @@ class Response extends Message implements ResponseInterface, MessageInterface
         if (!empty($headers)) {
             $this->setHeaders($headers);
         }
-        if (!is_null($body)) {
-            $this->setBody(is_string($body) ? new Stream\StreamString($body) : $body);
+        if (is_null($body)) {
+            $this->setBody(new Stream\StringStream(''));
+        } elseif ($body instanceof \Psr\Http\Message\StreamInterface) {
+            $this->setBody($body);
+        } elseif (is_string($body)) {
+            $this->setBody(new Stream\StringStream($body));
+        } elseif (is_resource($body)) {
+            $this->setBody(new Stream\Base($body));
+        } else {
+            throw new InvalidArgumentException('Body must be a StreamInterface, string, or resource');
         }
     }
 
@@ -105,23 +113,23 @@ class Response extends Message implements ResponseInterface, MessageInterface
     {
         $this->validateStatusCode($code);
         $this->statusCode = (int) $code;
-        $this->reasonPhase = $phrase ?: self::STATUS_CODE_WITH_PHRASES[(int) $code] ?? '';
+        $this->reasonPhrase = $phrase ?: (self::STATUS_CODE_WITH_PHRASES[(int) $code] ?? '');
     }
 
     protected function validateStatusCode($code)
     {
         if (filter_var($code, FILTER_VALIDATE_INT) === false) {
-            throw new \InvalidArgumentException('Status code must be an integer value.');
+            throw new InvalidArgumentException('Status code must be an integer value.');
         }
         if ($code < 100 || $code >= 600) {
-            throw new \InvalidArgumentException('Status code must be an value between 1xx and 5xx.');
+            throw new InvalidArgumentException('Status code must be an value between 1xx and 5xx.');
         }
     }
 
     public function withStatus($code, $reasonPhrase = '') : ResponseInterface
     {
         $this->validateStatusCode($code);
-        if ($this->statusCode === (int) $code && $this->reasonPhase === $reasonPhrase) {
+        if ($this->statusCode === (int) $code && $this->reasonPhrase === $reasonPhrase) {
             return $this;
         }
         $result = clone $this;
@@ -131,10 +139,10 @@ class Response extends Message implements ResponseInterface, MessageInterface
 
     public function getReasonPhrase(): string
     {
-        return $this->reasonPhase;
+        return $this->reasonPhrase;
     }
 
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->statusCode;
     }
