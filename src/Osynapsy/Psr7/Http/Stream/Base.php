@@ -303,4 +303,45 @@ class Base implements StreamInterface
 
         return isset($this->metadata[$key]) ? $this->metadata[$key] : null;
     }
+
+    /**
+     * Move pointer to the end of stream
+     */
+    public function end(): void
+    {
+        if (!is_resource($this->stream)) {
+            throw new RuntimeException('Stream is not a resource');
+        }
+
+        if (!$this->seekable) {
+            throw new RuntimeException('Stream is not seekable');
+        }
+
+        if (fseek($this->stream, 0, SEEK_END) === -1) {
+            throw new RuntimeException('Unable to seek to the end of the stream');
+        }
+    }
+
+    /**
+     * Get content from current position to the end
+     * 
+     * @return string
+     */
+    public function getContent(): string
+    {
+        if (!is_resource($this->stream)) {
+            throw new RuntimeException('Stream is not a resource');
+        }
+
+        if (!$this->readable) {
+            throw new RuntimeException('Stream is not readable');
+        }
+
+        $contents = stream_get_contents($this->stream);
+        if ($contents === false) {
+            throw new RuntimeException('Unable to read stream contents');
+        }
+
+        return $contents;
+    }
 }

@@ -231,4 +231,25 @@ class StringStream implements StreamInterface
 
         return $metadata[$key] ?? null;
     }
+
+    /**
+     * Move pointer to the end of stream
+     */
+    public function end(): void
+    {
+        $this->position = strlen($this->contents);
+    }
+
+    /**
+     * Get content from current position to the end
+     * 
+     * @return string
+     */
+    public function getContent(): string
+    {
+        if ($this->position >= strlen($this->contents)) {
+            return '';
+        }
+        return substr($this->contents, $this->position);
+    }
 }
