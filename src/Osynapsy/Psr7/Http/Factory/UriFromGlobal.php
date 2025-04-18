@@ -20,46 +20,81 @@ use Osynapsy\Psr7\Http\Uri;
  */
 class UriFromGlobal
 {
-    public static function get()
+    public static function get(): Uri
     {
-        list($host, $port) = self::getHostAndPort();
-        list($path, $query) = self::getPathAndQueryString();
-        return new Uri(self::getScheme(), $host, $port, $path, $query);
+        [$host, $port] = self::getHostAndPort();
+        [$path, $query] = self::getPathAndQueryString();
+
+        if (empty($host)) {
+            throw new \RuntimeException("Impossibile determinare l'host dalla variabile \$_SERVER.");
+        }
+
+        $scheme = self::getScheme();
+        $url = sprintf('%s://%s', $scheme, self::formatHost($host));
+
+        if (!empty($port) && !self::isDefaultPort($scheme, $port)) {
+            $url .= ':' . $port;
+        }
+
+        if (!empty($path)) {
+            $url .= $path[0] === '/' ? $path : '/' . $path;
+        }
+
+        if (!empty($query)) {
+            $url .= '?' . $query;
+        }
+
+        return new Uri($url);
     }
 
-    private static function getScheme()
+    private static function getScheme(): string
     {
-        return !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
+        return (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') ? 'https' : 'http';
     }
 
-    private static function getHostAndPort()
+    private static function getHostAndPort(): array
     {
-        if (isset($_SERVER['HTTP_HOST'])) {
+        if (!empty($_SERVER['HTTP_HOST'])) {
             return self::extractHostAndPortFromAuthority($_SERVER['HTTP_HOST']);
         }
+
         $host = $_SERVER['SERVER_NAME'] ?? $_SERVER['SERVER_ADDR'] ?? null;
         $port = $_SERVER['SERVER_PORT'] ?? null;
+
         return [$host, $port];
     }
 
     private static function extractHostAndPortFromAuthority(string $authority): array
     {
-        $uri = 'http://' . $authority;
-        $parts = parse_url($uri);
-        if (false === $parts) {
+        // Aggiunge schema fittizio per usare parse_url
+        $parsed = parse_url('http://' . $authority);
+
+        if ($parsed === false) {
             return [null, null];
         }
-        $host = $parts['host'] ?? null;
-        $port = $parts['port'] ?? null;
-        return [$host, $port];
+
+        return [$parsed['host'] ?? null, $parsed['port'] ?? null];
     }
 
-    private static function getPathAndQueryString()
+    private static function getPathAndQueryString(): array
     {
-        if (!isset($_SERVER['REQUEST_URI'])) {
+        if (empty($_SERVER['REQUEST_URI'])) {
             return ['', $_SERVER['QUERY_STRING'] ?? ''];
         }
-        $requestUriParts = explode('?', $_SERVER['REQUEST_URI'], 2);
-        return [$requestUriParts[0], $requestUriParts[1] ?? ''];
+
+        $parts = explode('?', $_SERVER['REQUEST_URI'], 2);
+        return [$parts[0], $parts[1] ?? ''];
+    }
+
+    private static function isDefaultPort(string $scheme, $port): bool
+    {
+        return ($scheme === 'http' && (int)$port === 80) || ($scheme === 'https' && (int)$port === 443);
+    }
+
+    private static function formatHost(string $host): string
+    {
+        // Aggiunge le parentesi quadre se l'host è un IPv6
+        return (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) ? '[' . $host . ']' : $host;
     }
 }
+
