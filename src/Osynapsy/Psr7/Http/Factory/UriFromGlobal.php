@@ -14,7 +14,11 @@ namespace Osynapsy\Psr7\Http\Factory;
 use Osynapsy\Psr7\Http\Uri;
 
 /**
- * Description of UriFromGlobalFactory
+ * UriFromGlobal Class
+ *
+ * This class provides a static method to construct an instance of the Uri class from global $_SERVER data.
+ * It extracts information such as the scheme (http/https), host, port, path, and query string to generate a full URL.
+ * The class correctly handles IPv6 addresses, default ports, and query strings.
  *
  * @author Pietro Celeste <p.celeste@osynapsy.net>
  */
@@ -24,26 +28,20 @@ class UriFromGlobal
     {
         [$host, $port] = self::getHostAndPort();
         [$path, $query] = self::getPathAndQueryString();
-
         if (empty($host)) {
             throw new \RuntimeException("Impossibile determinare l'host dalla variabile \$_SERVER.");
         }
-
         $scheme = self::getScheme();
         $url = sprintf('%s://%s', $scheme, self::formatHost($host));
-
         if (!empty($port) && !self::isDefaultPort($scheme, $port)) {
             $url .= ':' . $port;
         }
-
         if (!empty($path)) {
             $url .= $path[0] === '/' ? $path : '/' . $path;
         }
-
         if (!empty($query)) {
             $url .= '?' . $query;
         }
-
         return new Uri($url);
     }
 
@@ -57,10 +55,8 @@ class UriFromGlobal
         if (!empty($_SERVER['HTTP_HOST'])) {
             return self::extractHostAndPortFromAuthority($_SERVER['HTTP_HOST']);
         }
-
         $host = $_SERVER['SERVER_NAME'] ?? $_SERVER['SERVER_ADDR'] ?? null;
         $port = $_SERVER['SERVER_PORT'] ?? null;
-
         return [$host, $port];
     }
 
@@ -68,11 +64,9 @@ class UriFromGlobal
     {
         // Aggiunge schema fittizio per usare parse_url
         $parsed = parse_url('http://' . $authority);
-
         if ($parsed === false) {
             return [null, null];
         }
-
         return [$parsed['host'] ?? null, $parsed['port'] ?? null];
     }
 
@@ -81,7 +75,6 @@ class UriFromGlobal
         if (empty($_SERVER['REQUEST_URI'])) {
             return ['', $_SERVER['QUERY_STRING'] ?? ''];
         }
-
         $parts = explode('?', $_SERVER['REQUEST_URI'], 2);
         return [$parts[0], $parts[1] ?? ''];
     }
