@@ -1,6 +1,6 @@
 {
     "name": "osynapsy/psr",
-    "version": "0.1",
+    "version": "1.0",
     "homepage": "http://www.osynapsy.net/psr",
     "type": "library",
     "description": "Osynapsy Psr is implementation of Psr interface",
