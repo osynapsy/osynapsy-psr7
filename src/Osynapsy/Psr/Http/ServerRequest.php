@@ -11,7 +11,7 @@
 
 namespace Osynapsy\Psr\Http;
 
-use Osynapsy\Psr7\Http\Factory\UriFromGlobal;
+use Osynapsy\Psr\Http\Factory\UriFromGlobal;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
