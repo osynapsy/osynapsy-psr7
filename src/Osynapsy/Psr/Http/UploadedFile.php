@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Osynapsy\Psr7\Http;
+namespace Osynapsy\Psr\Http;
 
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\StreamInterface;

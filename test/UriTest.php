@@ -2,8 +2,8 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Osynapsy\Psr7\Uri;
-use Osynapsy\Psr7\Factory\UriFromGlobal;
+use Osynapsy\Psr7\Http\Uri;
+use Osynapsy\Psr7\Http\Factory\UriFromGlobal;
 
 /**
  * Description of ResponseTest
@@ -14,12 +14,12 @@ class UriTest extends TestCase
 {
     public function UriFactory()
     {
-        return new Uri('https', 'localhost', 8080, '/', 'q=test', 'main', 'user', 'password');
+        return new Uri('https://user:password@localhost:8080/?q=test#main');
     }
 
     public function UriFromStringFactory($uri)
     {
-        return Uri::fromString($uri);
+        return new Uri($uri);
     }
 
     public function testFactory()
@@ -36,6 +36,7 @@ class UriTest extends TestCase
     public function testUriPortDefault()
     {
         $uri = $this->uriFactory();
+
         $this->assertEquals($uri->getPort(), 8080);
     }
 

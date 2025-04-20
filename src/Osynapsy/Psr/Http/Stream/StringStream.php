@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Osynapsy\Psr7\Http\Stream;
+namespace Osynapsy\Psr\Http\Stream;
 
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
@@ -242,7 +242,7 @@ class StringStream implements StreamInterface
 
     /**
      * Get content from current position to the end
-     * 
+     *
      * @return string
      */
     public function getContent(): string

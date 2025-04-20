@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Osynapsy\Psr7\Http\Stream;
+namespace Osynapsy\Psr\Http\Stream;
 
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
@@ -65,8 +65,8 @@ class Base implements StreamInterface
         $this->stream = $stream;
         $this->metadata = stream_get_meta_data($stream);
         $this->readable = false !== strpos($this->metadata['mode'], 'r') || false !== strpos($this->metadata['mode'], '+');
-        $this->writable = false !== strpos($this->metadata['mode'], 'w') || 
-                         false !== strpos($this->metadata['mode'], 'a') || 
+        $this->writable = false !== strpos($this->metadata['mode'], 'w') ||
+                         false !== strpos($this->metadata['mode'], 'a') ||
                          false !== strpos($this->metadata['mode'], '+');
         $this->seekable = $this->metadata['seekable'];
     }
@@ -324,7 +324,7 @@ class Base implements StreamInterface
 
     /**
      * Get content from current position to the end
-     * 
+     *
      * @return string
      */
     public function getContent(): string

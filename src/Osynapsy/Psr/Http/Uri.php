@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Osynapsy\Psr7\Http;
+namespace Osynapsy\Psr\Http;
 
 use Psr\Http\Message\UriInterface;
 use InvalidArgumentException;
@@ -52,7 +52,7 @@ class Uri implements UriInterface
             if ($parts === false) {
                 throw new InvalidArgumentException("Unable to parse URI: $uri");
             }
-            
+
             $this->scheme = isset($parts['scheme']) ? strtolower($parts['scheme']) : '';
             $this->userInfo = isset($parts['user']) ? $parts['user'] : '';
             if (isset($parts['pass'])) {

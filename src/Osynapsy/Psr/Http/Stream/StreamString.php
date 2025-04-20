@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Osynapsy\Psr7\Http\Stream;
+namespace Osynapsy\Psr\Http\Stream;
 
 /**
  * Description of String

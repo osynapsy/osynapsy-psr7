@@ -2,12 +2,12 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Osynapsy\Psr7\Stream\StringStream;
+use Osynapsy\Psr7\Http\Stream\StringStream;
 
 /**
  * Description of StringStreamTest
  *
- * @author Pietro Celeste <pietro.celeste@gmail.com>
+ * @author Pietro Celeste <p.celeste@osynapsy.net>
  */
 class StringStreamTest extends TestCase
 {
@@ -56,7 +56,7 @@ class StringStreamTest extends TestCase
     {
         $string1 = 'test the StringStream';
         $stream = new StringStream($string1, 'w');
-        $this->assertTrue($stream->isWriteable());
+        $this->assertTrue($stream->isWritable());
     }
 
     public function testWrite(): void

@@ -2,12 +2,12 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Osynapsy\Psr7\Message as HttpMessage;
+use Osynapsy\Psr7\Http\Message as HttpMessage;
 
 /**
  * Description of StringStreamTest
  *
- * @author Pietro Celeste <pietro.celeste@gmail.com>
+ * @author Pietro Celeste <p.celeste@osynapsy.net>
  */
 class MessageTest extends TestCase
 {

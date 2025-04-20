@@ -2,12 +2,12 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Osynapsy\Psr7\Request;
+use Osynapsy\Psr7\Http\Request;
 
 /**
  * Description of ResponseTest
  *
- * @author pietro
+ * @author Pietro Celeste <p.celeste@osynapsy.net>
  */
 class RequestTest extends TestCase
 {

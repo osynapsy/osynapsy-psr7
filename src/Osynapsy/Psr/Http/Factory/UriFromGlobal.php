@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Osynapsy\Psr7\Http\Factory;
+namespace Osynapsy\Psr\Http\Factory;
 
-use Osynapsy\Psr7\Http\Uri;
+use Osynapsy\Psr\Http\Uri;
 
 /**
  * UriFromGlobal Class

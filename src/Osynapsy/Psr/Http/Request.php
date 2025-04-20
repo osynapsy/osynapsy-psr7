@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Osynapsy\Psr7\Http;
+namespace Osynapsy\Psr\Http;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
@@ -54,7 +54,7 @@ class Request extends Message implements RequestInterface
             $this->setBody(new Stream\Base($body));
         } else {
             throw new InvalidArgumentException('Body must be a StreamInterface, string, or resource');
-        }                
+        }
         $this->setProtocolVersion($protocolVersion);
         $this->updateHostFromUri();
     }
