@@ -19,7 +19,7 @@
     },
     "autoload" : {
         "psr-4": {
-            "Osynapsy\\Psr": "src/Osynapsy/Psr/"
+            "Osynapsy\\Psr\\": "src/Osynapsy/Psr"
         }
     }
 }
