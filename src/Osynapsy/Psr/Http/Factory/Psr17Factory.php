@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Osynapsy\Psr\Http\Factory;
 
-use Osynapsy\Psr7\Http\{Request, Response, ServerRequest, Stream, UploadedFile, Uri};
+use Osynapsy\Psr\Http\{Request, Response, ServerRequest, Stream, UploadedFile, Uri};
 use Psr\Http\Message\{RequestFactoryInterface, RequestInterface, ResponseFactoryInterface, ResponseInterface, ServerRequestFactoryInterface, ServerRequestInterface, StreamFactoryInterface, StreamInterface, UploadedFileFactoryInterface, UploadedFileInterface, UriFactoryInterface, UriInterface};
 
 /**

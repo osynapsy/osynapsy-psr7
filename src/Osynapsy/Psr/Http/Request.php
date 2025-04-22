@@ -100,7 +100,7 @@ class Request extends Message implements RequestInterface
         return $this->requestTarget;
     }
 
-    public function withRequestTarget($requestTarget)
+    public function withRequestTarget($requestTarget) : \Psr\Http\Message\RequestInterface
     {
         if ($this->requestTarget === $requestTarget) {
             return $this;
@@ -115,7 +115,7 @@ class Request extends Message implements RequestInterface
         return $this->method;
     }
 
-    public function withMethod($method)
+    public function withMethod($method): \Psr\Http\Message\RequestInterface
     {
         $method = strtoupper($method);
         $this->validateMethod($method);
@@ -132,7 +132,7 @@ class Request extends Message implements RequestInterface
         return $this->uri;
     }
 
-    public function withUri(UriInterface $uri, $preserveHost = false)
+    public function withUri(UriInterface $uri, bool $preserveHost = false) : \Psr\Http\Message\RequestInterface
     {
         if ($uri === $this->uri) {
             return $this;

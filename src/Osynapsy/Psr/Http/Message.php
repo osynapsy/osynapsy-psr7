@@ -28,7 +28,7 @@ class Message implements MessageInterface
     protected $headerNames = [];
     protected $bodyStream;
 
-    public function getProtocolVersion()
+    public function getProtocolVersion() : string
     {
         return $this->protocol;
     }
@@ -51,14 +51,14 @@ class Message implements MessageInterface
         }
     }
 
-    public function withProtocolVersion($protocolVersion)
+    public function withProtocolVersion($protocolVersion) : \Psr\Http\Message\MessageInterface
     {
         $result = clone $this;
         $result->setProtocolVersion($protocolVersion);
         return $result;
     }
 
-    public function withHeader($key, $value)
+    public function withHeader($key, $value) : \Psr\Http\Message\MessageInterface
     {
         $caseInsensitiveKey = $this->caseInsensitiveKey($key);
         $result = clone $this;
@@ -67,7 +67,7 @@ class Message implements MessageInterface
         return $result;
     }
 
-    public function withAddedHeader($key, $value)
+    public function withAddedHeader($key, $value) : \Psr\Http\Message\MessageInterface
     {
         $caseInsensitiveKey = $this->caseInsensitiveKey($key);
         $values = is_array($value) ? $value : [$value];
@@ -82,7 +82,7 @@ class Message implements MessageInterface
         return $result;
     }
 
-    public function withoutHeader($name)
+    public function withoutHeader($name) : \Psr\Http\Message\MessageInterface
     {
         if (!$this->hasHeader($name)) {
             return $this;
@@ -148,7 +148,7 @@ class Message implements MessageInterface
         return implode(', ', $this->headers[$headerKey]);
     }
 
-    public function getBody()
+    public function getBody() : \Psr\Http\Message\StreamInterface
     {
         if ($this->bodyStream === null) {
             $this->bodyStream = new Stream\StringStream('');
@@ -171,7 +171,7 @@ class Message implements MessageInterface
         $this->bodyStream = $stream;
     }
 
-    public function withBody(StreamInterface $stream)
+    public function withBody(StreamInterface $stream) : \Psr\Http\Message\MessageInterface 
     {
         if ($stream === $this->bodyStream) {
             return $this;
