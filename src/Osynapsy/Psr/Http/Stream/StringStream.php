@@ -105,6 +105,11 @@ class StringStream implements StreamInterface
         return true;
     }
 
+    public function search($key, $position = null)
+    {
+        return strpos($this->contents, $key, $position ?? $this->position);
+    }
+
     /**
      * {@inheritdoc}
      */
