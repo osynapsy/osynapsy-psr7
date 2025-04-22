@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Osynapsy\Psr7\Http\Factory\UriFromGlobal;
+use Osynapsy\Psr\Http\Factory\UriFromGlobal;
 
 /**
  * Description of UriFromGlobalTest
