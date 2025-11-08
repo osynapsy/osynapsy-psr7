@@ -108,7 +108,7 @@ class UploadedFile implements UploadedFileInterface
         return $this->moved;
     }
 
-      /**
+    /**
      * Depending on the value set file or stream variable
      *
      * @param StreamInterface|string|resource $streamOrFile
@@ -124,7 +124,7 @@ class UploadedFile implements UploadedFileInterface
         } elseif ($streamOrFile instanceof StreamInterface) {
             $this->stream = $streamOrFile;
         } else {
-            throw new InvalidArgumentException('Invalid stream or file provided for UploadedFile');
+            throw new \InvalidArgumentException('Invalid stream or file provided for UploadedFile');
         }
     }
 

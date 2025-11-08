@@ -152,13 +152,13 @@ class ServerRequest extends Request implements ServerRequestInterface
                 $normalized[$key] = $value;
                 continue;
             }
-            if (is_array($value) && isset($value['tmp_name'])) {
+            if (is_array($value) && !is_array($value['tmp_name'] ?? null)) {
                 $normalized[$key] = self::createUploadedFileFromSpec($value);
             } elseif (is_array($value)) {
                 $normalized[$key] = self::normalizeNestedFileSpec($value);
                 continue;
             } else {
-                throw new InvalidArgumentException('Invalid value in files specification');
+                throw new \InvalidArgumentException('Invalid value in files specification');
             }
         }
         return $normalized;
