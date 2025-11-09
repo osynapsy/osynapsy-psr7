@@ -73,7 +73,7 @@ class UploadedFile implements UploadedFileInterface
         $this->setError($errorStatus);
         $this->size = $size;
         $this->clientFilename = $clientFilename;
-        $this->clientMediaType = $clientMediaType;
+        $this->clientMediaType = $clientMediaType;        
         if ($this->isOk()) {
             $this->setStreamOrFile($streamOrFile);
         }
@@ -85,7 +85,7 @@ class UploadedFile implements UploadedFileInterface
     private function setError(int $error): void
     {
         if (in_array($error, UploadedFile::ERRORS, true) === false) {
-            throw new InvalidArgumentException('Invalid error status for UploadedFile');
+            throw new \InvalidArgumentException('Invalid error status for UploadedFile');
         }
         $this->error = $error;
     }
@@ -157,18 +157,31 @@ class UploadedFile implements UploadedFileInterface
     {
         $this->validateActive();
         if ($this->isStringNotEmpty($targetPath) === false) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 'Invalid path provided for move operation; must be a non-empty string'
             );
         }
         $this->moved = $this->file ? $this->moveFile($targetPath) : $this->saveStream($targetPath);
         if ($this->moved === false) {
-            throw new RuntimeException(sprintf('Uploaded file could not be moved to %s', $targetPath));
+            throw new \RuntimeException(sprintf('Uploaded file could not be moved to %s', $targetPath));
         }
     }
 
-    protected function moveFile(string $targetPath) : void
+    protected function validateActive()
     {
+        if ($this->error !== UPLOAD_ERR_OK) {
+            throw new \RuntimeException("File upload error: " . $this->error);
+        }
+        if (empty($this->clientFilename)) {
+            throw new \RuntimeException("Uploaded file has no name.");
+        }
+        if (!is_uploaded_file($this->file)) {
+            throw new \RuntimeException("Temporary uploaded file not found or invalid.");
+        }
+    }
+    
+    protected function moveFile(string $targetPath) : void
+    {        
         PHP_SAPI === 'cli' ? rename($this->file, $targetPath) : move_uploaded_file($this->file, $targetPath);
     }
 
